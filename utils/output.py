@@ -50,6 +50,8 @@ class OutputFormatter:
     
     def print_rich_table(self, data: List[Dict], title: str = ""):
         """使用Rich库打印彩色表格"""
+        if not isinstance(data, list):
+            data = []
         if not data:
             self.console.print("暂无数据", style="yellow")
             return
@@ -118,7 +120,9 @@ class OutputFormatter:
         self.console.print(f"ℹ️  {message}", style="blue")
     
     def print_simple_list(self, data: List[Dict], title: str = ""):
-        """简单列表显示"""
+        """简单列表显示（支持文档和数据集）"""
+        if not isinstance(data, list):
+            data = []
         if not data:
             self.console.print("暂无数据", style="yellow")
             return
@@ -127,16 +131,15 @@ class OutputFormatter:
         self.console.print("=" * 50)
         
         for i, item in enumerate(data, 1):
-            # 提取重要字段
-            dataset_id = item.get('id', 'N/A')
+            # 兼容文档和数据集
+            doc_id = item.get('id', item.get('document_id', 'N/A'))
             name = item.get('name', 'N/A')
-            description = item.get('description', 'N/A')
-            created_at = item.get('created_at', 'N/A')
+            description = item.get('description', '')
+            created_at = item.get('created_at', item.get('create_time', 'N/A'))
             status = item.get('status', 'N/A')
-            
-            self.console.print(f"\n{i}. 数据集ID: {dataset_id}", style="cyan")
+            self.console.print(f"\n{i}. 文档ID: {doc_id}", style="cyan")
             self.console.print(f"   名称: {name}", style="green")
-            if description and description != 'N/A':
+            if description:
                 self.console.print(f"   描述: {description}", style="blue")
             self.console.print(f"   状态: {status}", style="yellow")
             self.console.print(f"   创建时间: {created_at}", style="white")
