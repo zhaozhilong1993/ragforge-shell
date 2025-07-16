@@ -1,0 +1,18 @@
+api:
+  base_url: "http://localhost:9380"
+  timeout: 30
+  headers:
+    Content-Type: "application/json"
+    Accept: "application/json"
+  # 认证令牌（如果需要）
+  # auth_token: "your_token_here"
+
+# 输出格式配置
+output:
+  format: "table"  # table, json, yaml
+  max_width: 120
+
+# 日志配置
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s" 
