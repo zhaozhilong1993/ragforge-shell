@@ -128,7 +128,13 @@ def create(dataset_id, name, content, output_format):
         response = client.post(f'/api/v1/datasets/{dataset_id}/documents', 
                              json_data={'document': document_data})
         
-        formatter.print_success(f"文档 {name} 创建成功")
+        # 检查API响应是否真正成功
+        if response.get('code') == 0 and not response.get('message', '').startswith('Please check your authorization'):
+            formatter.print_success(f"文档 {name} 创建成功")
+        else:
+            error_msg = response.get('message', '未知错误')
+            formatter.print_error(f"创建文档失败: {error_msg}")
+            return
         
         # 格式化输出
         if output_format == 'table':

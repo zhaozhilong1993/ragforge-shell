@@ -252,6 +252,53 @@ def reset_password(email, old_password, new_password, output_format):
 
 
 @user.command()
+@click.argument('old_password')
+@click.argument('new_password')
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def change_password(old_password, new_password, output_format):
+    """修改当前用户密码"""
+    try:
+        client = get_auth_client()
+        formatter = OutputFormatter(output_format)
+        
+        # 检查是否已登录
+        if not client.has_auth_token():
+            formatter.print_error("请先登录")
+            return
+        
+        # 加密密码
+        encrypted_old_password = encrypt_password(old_password)
+        encrypted_new_password = encrypt_password(new_password)
+        
+        # 构建修改密码数据
+        change_data = {
+            'old_password': encrypted_old_password,
+            'new_password': encrypted_new_password
+        }
+        
+        # 调用API
+        response = client.post('/v1/user/change_password', json_data=change_data)
+        
+        if response.get('code') == 0:
+            formatter.print_success("密码修改成功")
+        else:
+            formatter.print_error(f"密码修改失败: {response.get('message', '未知错误')}")
+            return
+        
+        # 格式化输出
+        if output_format == 'table':
+            formatter.print_rich_table([response], "密码修改结果")
+        else:
+            print(formatter.format_output(response))
+            
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"密码修改失败: {e}")
+
+
+@user.command()
 @click.option('--format', 'output_format', default='table', 
               type=click.Choice(['table', 'json', 'yaml']), 
               help='输出格式')
