@@ -12,7 +12,7 @@ def datasets():
 
 @datasets.command()
 @click.option('--format', 'output_format', default='table', 
-              type=click.Choice(['table', 'json', 'yaml']), 
+              type=click.Choice(['table', 'json', 'yaml', 'simple']), 
               help='输出格式')
 def list(output_format):
     """列出所有数据集"""
@@ -37,6 +37,12 @@ def list(output_format):
             datasets = response.get('data', [])
             if datasets:
                 formatter.print_rich_table(datasets, "数据集列表")
+            else:
+                formatter.print_info("暂无数据集")
+        elif output_format == 'simple':
+            datasets = response.get('data', [])
+            if datasets:
+                formatter.print_simple_list(datasets, "数据集列表")
             else:
                 formatter.print_info("暂无数据集")
         else:

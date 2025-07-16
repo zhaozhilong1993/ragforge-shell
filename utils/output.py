@@ -51,18 +51,53 @@ class OutputFormatter:
     def print_rich_table(self, data: List[Dict], title: str = ""):
         """使用Rich库打印彩色表格"""
         if not data:
-            self.console.print("No data to display", style="yellow")
+            self.console.print("暂无数据", style="yellow")
             return
         
-        table = Table(title=title)
+        table = Table(title=title, show_header=True, header_style="bold magenta")
         
-        # 添加列
-        for key in data[0].keys():
-            table.add_column(key, style="cyan")
+        # 定义重要字段的显示优先级
+        priority_fields = ['id', 'name', 'description', 'created_at', 'updated_at', 'status']
         
-        # 添加行
+        # 获取所有字段
+        all_fields = set()
         for row in data:
-            table.add_row(*[str(value) for value in row.values()])
+            all_fields.update(row.keys())
+        
+        # 按优先级排序字段
+        sorted_fields = []
+        for field in priority_fields:
+            if field in all_fields:
+                sorted_fields.append(field)
+                all_fields.remove(field)
+        
+        # 添加剩余字段
+        sorted_fields.extend(sorted(all_fields))
+        
+        # 添加列，设置合适的宽度
+        for field in sorted_fields:
+            if field in ['id', 'status']:
+                table.add_column(field, style="cyan", width=10)
+            elif field in ['name']:
+                table.add_column(field, style="green", width=20)
+            elif field in ['description']:
+                table.add_column(field, style="blue", width=30)
+            elif field in ['created_at', 'updated_at']:
+                table.add_column(field, style="yellow", width=20)
+            else:
+                table.add_column(field, style="white", width=15)
+        
+        # 添加行，处理长文本
+        for row in data:
+            row_values = []
+            for field in sorted_fields:
+                value = row.get(field, "")
+                if isinstance(value, str) and len(value) > 25:
+                    value = value[:22] + "..."
+                elif isinstance(value, (dict, list)):
+                    value = str(value)[:22] + "..." if len(str(value)) > 25 else str(value)
+                row_values.append(str(value))
+            table.add_row(*row_values)
         
         self.console.print(table)
     
@@ -80,4 +115,29 @@ class OutputFormatter:
     
     def print_info(self, message: str):
         """打印信息消息"""
-        self.console.print(f"ℹ️  {message}", style="blue") 
+        self.console.print(f"ℹ️  {message}", style="blue")
+    
+    def print_simple_list(self, data: List[Dict], title: str = ""):
+        """简单列表显示"""
+        if not data:
+            self.console.print("暂无数据", style="yellow")
+            return
+        
+        self.console.print(f"\n{title}", style="bold blue")
+        self.console.print("=" * 50)
+        
+        for i, item in enumerate(data, 1):
+            # 提取重要字段
+            dataset_id = item.get('id', 'N/A')
+            name = item.get('name', 'N/A')
+            description = item.get('description', 'N/A')
+            created_at = item.get('created_at', 'N/A')
+            status = item.get('status', 'N/A')
+            
+            self.console.print(f"\n{i}. 数据集ID: {dataset_id}", style="cyan")
+            self.console.print(f"   名称: {name}", style="green")
+            if description and description != 'N/A':
+                self.console.print(f"   描述: {description}", style="blue")
+            self.console.print(f"   状态: {status}", style="yellow")
+            self.console.print(f"   创建时间: {created_at}", style="white")
+            self.console.print("-" * 30) 
