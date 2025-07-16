@@ -11,38 +11,22 @@ from Crypto.Cipher import PKCS1_v1_5 as Cipher_pkcs1_v1_5
 
 def encrypt_password(password: str) -> str:
     """
-    使用RSA公钥加密密码
-    
-    Args:
-        password: 原始密码
-        
-    Returns:
-        加密后的密码字符串
+    使用RSA公钥加密密码，与后端/前端一致
     """
-    # RSA公钥（与前端使用相同的公钥）
     public_key = """-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArq9XTUSeYr2+N1h3Afl/
-z8Dse/2yD0ZGrKwx+EEEcdsBLca9Ynmx3nIB5obmLlSfmskLpBo0UACBmB5rEjBp2
-Q2f3AG3Hjd4B+gNCG6BDaawuDlgANIhGnaTLrIqWrrcm4EMzJOnAOI1fgzJRsOOUE
-faS318Eq9OVO3apEyCCt0lOQK6PuksduOjVxtltDav+guVAA068NrPYmRNabVKRNL
-JpL8w4D44sfth5RvZ3q9t+6RTArpEtc5sh5ChzvqPOzKGMXW83C95TxmXqpbK6olN
-4RevSfVjEAgCydH6HN6OhtOQEcnrU97r9H0iZOWwbw3pVrZiUkuRD1R56Wzs2wID
-AQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr1KlvagFKU0wgjhJkXnF
+a6n9GlxKoOW55rLaITYof+I2rjNBA7ddW22v804MqJSPyC4d4gKbApul5BYXnAhK
+8Z6qf9sUMRsks+dc+sxVU/sBUJt1w31HM+KRw4gAias/qRpE9i+VCG7zijZQVpLr
+OlZ4a/ia8CZ6dHsknpMq/TU2pPJcp2yJsGb7hroogn1V4lz+H0mRw9idGM0ebs2W
+agtNbrO28UZ6tugMK5MQPb1puKlOGVS7EviR+82Cl56jV0NmYDYO7YJlne+X46uB
+c5hfhByznXSrmwhZHsgB9wYsWYQf1pO58JtE+gb1GEjoYWN2psJhlGh+23v+DnlP
+rQIDAQAB
 -----END PUBLIC KEY-----"""
-    
-    try:
-        # 将密码进行base64编码
-        password_base64 = base64.b64encode(password.encode('utf-8')).decode("utf-8")
-        
-        # 使用RSA公钥加密
-        rsa_key = RSA.importKey(public_key)
-        cipher = Cipher_pkcs1_v1_5.new(rsa_key)
-        encrypted_password = cipher.encrypt(password_base64.encode())
-        
-        # 返回base64编码的加密结果
-        return base64.b64encode(encrypted_password).decode('utf-8')
-    except Exception as e:
-        raise Exception(f"密码加密失败: {e}")
+    rsa_key = RSA.importKey(public_key)
+    cipher = Cipher_pkcs1_v1_5.new(rsa_key)
+    password_base64 = base64.b64encode(password.encode('utf-8')).decode('utf-8')
+    encrypted_password = cipher.encrypt(password_base64.encode())
+    return base64.b64encode(encrypted_password).decode('utf-8')
 
 
 def test_encryption():
