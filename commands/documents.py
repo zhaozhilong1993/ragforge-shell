@@ -26,7 +26,7 @@ def list_documents(dataset_id, output_format):
             return
         
         # 调用API
-        response = client.get(f'/api/v1/datasets/{dataset_id}/documents')
+        response = client.get(f'/v1/document/list')
         
         # 如果返回认证错误，尝试切换token格式
         if response.get('message') == 'Please check your authorization format.':
@@ -241,6 +241,58 @@ def chunks(dataset_id, document_id, output_format):
     except Exception as e:
         formatter = OutputFormatter()
         formatter.print_error(f"获取文档块列表失败: {e}") 
+
+
+@documents.command()
+@click.argument('dataset_id')
+@click.option('--file', 'file_path', required=True, help='要上传的本地文件路径')
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def upload(dataset_id, file_path, output_format):
+    """上传本地文件到知识库（dataset）"""
+    import os
+    import requests
+    from utils.output import OutputFormatter
+    try:
+        client = APIClient()
+        formatter = OutputFormatter(output_format)
+        
+        # 检查是否有API token
+        if not _ensure_token(client, formatter):
+            return
+        
+        if not os.path.isfile(file_path):
+            formatter.print_error(f"文件不存在: {file_path}")
+            return
+        
+        # 修正上传接口路径和参数
+        headers = {}
+        if 'Authorization' in client.session.headers:
+            headers['Authorization'] = client.session.headers['Authorization']
+        url = client.base_url.rstrip('/') + '/v1/document/upload'
+        with open(file_path, 'rb') as f:
+            files = {'file': (os.path.basename(file_path), f)}
+            data = {'kb_id': dataset_id}
+            resp = requests.post(url, headers=headers, files=files, data=data)
+        
+        try:
+            response = resp.json()
+        except Exception:
+            formatter.print_error(f"服务端返回非JSON: {resp.text}")
+            return
+        
+        if response.get('code') == 0:
+            formatter.print_success(f"文件 {file_path} 上传成功")
+            if output_format == 'table':
+                formatter.print_rich_table(response.get('data', []), "上传结果")
+            else:
+                print(formatter.format_output(response))
+        else:
+            formatter.print_error(f"上传失败: {response.get('message', '未知错误')}")
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"文件上传失败: {e}")
 
 
 def _ensure_token(client, formatter):
