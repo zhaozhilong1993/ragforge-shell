@@ -137,7 +137,11 @@ class OutputFormatter:
             description = item.get('description', '')
             created_at = item.get('created_at', item.get('create_time', 'N/A'))
             status = item.get('status', 'N/A')
-            self.console.print(f"\n{i}. 文档ID: {doc_id}", style="cyan")
+            # 判断是否为数据集（知识库）
+            if title and '数据集' in title:
+                self.console.print(f"\n{i}. 知识库ID: {doc_id}", style="cyan")
+            else:
+                self.console.print(f"\n{i}. 文档ID: {doc_id}", style="cyan")
             self.console.print(f"   名称: {name}", style="green")
             if description:
                 self.console.print(f"   描述: {description}", style="blue")
