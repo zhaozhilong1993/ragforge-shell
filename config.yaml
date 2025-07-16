@@ -1,18 +1,14 @@
 api:
-  base_url: "http://localhost:9380"
-  timeout: 30
+  api_token: ragforge-VhNmY0OTAwNjIyNjExZjBhZjQ4NGE5MG
+  auth_token: ImY1ODVkMDE0NjIyMzExZjA5ZTM1NGE5MGIyNjUyM2QxIg.aHdwNA.JANkwhXro7dU5G_qm-4MsYu2w90
+  base_url: http://localhost:9380
   headers:
-    Content-Type: "application/json"
-    Accept: "application/json"
-  # 认证令牌（如果需要）
-  # auth_token: "your_token_here"
-
-# 输出格式配置
-output:
-  format: "table"  # table, json, yaml
-  max_width: 120
-
-# 日志配置
+    Accept: application/json
+    Content-Type: application/json
+  timeout: 30
 logging:
-  level: "INFO"
-  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s" 
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  level: INFO
+output:
+  format: table
+  max_width: 120

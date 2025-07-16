@@ -101,13 +101,33 @@ def login(email, password, output_format):
         if response.get('code') == 0:
             formatter.print_success("登录成功")
             
-            # 设置认证令牌
-            user_data = response.get('data', {})
-            token = user_data.get('access_token')
-            if token:
-                client.set_auth_token(token)
+            # 检查是否有认证令牌
+            auth_header = client.session.headers.get('Authorization')
+            if auth_header:
+                client.set_auth_token(auth_header)
                 set_auth_client(client)  # 保存认证状态
-                formatter.print_info(f"认证令牌: {token[:20]}...")
+                formatter.print_info(f"认证令牌: {auth_header[:20]}...")
+                
+                # 获取或创建API token
+                try:
+                    # 使用用户token调用API token创建接口
+                    api_token_response = client.post('/v1/system/new_token')
+                    if api_token_response.get('code') == 0:
+                        api_token_data = api_token_response.get('data', {})
+                        api_token = api_token_data.get('token')
+                        if api_token:
+                            # 保存API token到配置
+                            if 'api' not in client.config:
+                                client.config['api'] = {}
+                            client.config['api']['api_token'] = api_token
+                            client._save_config(client.config)
+                            formatter.print_info(f"API令牌: {api_token[:20]}...")
+                    else:
+                        formatter.print_warning(f"获取API令牌失败: {api_token_response.get('message', '未知错误')}")
+                except Exception as e:
+                    formatter.print_warning(f"获取API令牌失败: {e}")
+            else:
+                formatter.print_warning("未找到认证令牌")
         else:
             formatter.print_error(f"登录失败: {response.get('message', '未知错误')}")
             return
@@ -242,7 +262,7 @@ def status(output_format):
         formatter = OutputFormatter(output_format)
         
         # 检查是否有认证令牌
-        if hasattr(client, 'session') and 'Authorization' in client.session.headers:
+        if client.has_auth_token():
             formatter.print_success("已登录")
             
             # 尝试获取用户信息

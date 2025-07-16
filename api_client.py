@@ -9,6 +9,7 @@ class APIClient:
     """API客户端封装类"""
     
     def __init__(self, config_path: str = "config.yaml"):
+        self.config_path = config_path
         self.config = self._load_config(config_path)
         self.session = requests.Session()
         self._setup_session()
@@ -20,9 +21,27 @@ class APIClient:
             with open(config_path, 'r', encoding='utf-8') as f:
                 return yaml.safe_load(f)
         except FileNotFoundError:
-            raise FileNotFoundError(f"配置文件 {config_path} 不存在")
+            # 如果配置文件不存在，创建默认配置
+            default_config = {
+                'api': {
+                    'base_url': 'http://localhost:9380',
+                    'timeout': 30,
+                    'headers': {}
+                },
+                'logging': {
+                    'level': 'INFO',
+                    'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                }
+            }
+            self._save_config(default_config)
+            return default_config
         except yaml.YAMLError as e:
             raise ValueError(f"配置文件格式错误: {e}")
+    
+    def _save_config(self, config: Dict[str, Any]):
+        """保存配置文件"""
+        with open(self.config_path, 'w', encoding='utf-8') as f:
+            yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
     
     def _setup_session(self):
         """设置HTTP会话"""
@@ -38,7 +57,8 @@ class APIClient:
         # 添加认证头（如果配置中有）
         auth_token = api_config.get('auth_token')
         if auth_token:
-            self.session.headers['Authorization'] = f"Bearer {auth_token}"
+            # Flask-Login期望直接的token，不是Bearer格式
+            self.session.headers['Authorization'] = auth_token
     
     def _setup_logging(self):
         """设置日志"""
@@ -94,6 +114,13 @@ class APIClient:
         try:
             response = self.session.post(url, data=data, json=json_data)
             response.raise_for_status()
+            
+            # 检查响应头中是否有Authorization
+            auth_header = response.headers.get('Authorization')
+            if auth_header:
+                self.session.headers['Authorization'] = auth_header
+                self.logger.info("从响应头获取认证令牌")
+            
             return self._handle_response(response)
         except requests.exceptions.RequestException as e:
             self.logger.error(f"POST请求失败: {e}")
@@ -130,12 +157,30 @@ class APIClient:
         return self.config
     
     def set_auth_token(self, token: str):
-        """设置认证令牌"""
-        self.session.headers['Authorization'] = f"Bearer {token}"
-        self.logger.info("认证令牌已设置")
+        """设置认证令牌并保存到配置文件"""
+        # Flask-Login期望直接的token，不是Bearer格式
+        self.session.headers['Authorization'] = token
+        
+        # 保存到配置文件
+        if 'api' not in self.config:
+            self.config['api'] = {}
+        self.config['api']['auth_token'] = token
+        self._save_config(self.config)
+        
+        self.logger.info("认证令牌已设置并保存")
     
     def clear_auth_token(self):
-        """清除认证令牌"""
+        """清除认证令牌并从配置文件删除"""
         if 'Authorization' in self.session.headers:
             del self.session.headers['Authorization']
-        self.logger.info("认证令牌已清除") 
+        
+        # 从配置文件删除
+        if 'api' in self.config and 'auth_token' in self.config['api']:
+            del self.config['api']['auth_token']
+            self._save_config(self.config)
+        
+        self.logger.info("认证令牌已清除")
+    
+    def has_auth_token(self) -> bool:
+        """检查是否有认证令牌"""
+        return 'Authorization' in self.session.headers 
