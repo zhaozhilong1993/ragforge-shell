@@ -18,24 +18,19 @@ ragforge-shell/
 │   ├── chunks.py          # 文档块管理命令
 │   ├── retrieval.py       # 检索功能命令
 │   ├── user.py            # 用户管理命令
+│   ├── system.py          # 系统管理命令
 │   └── debug.py           # 调试命令
 ├── utils/                 # 工具函数目录
 │   └── output.py          # 输出格式化工具
 ├── examples/              # 示例脚本目录
-│   ├── example_usage.py   # 使用示例
-│   ├── examples.py        # 更多示例
-│   ├── quick_start.py     # 快速开始示例
-│   └── try_login.py       # 登录示例
-├── tests/                 # 测试脚本目录
-│   ├── test_encryption.py # 加密测试
-│   ├── test_auth_endpoints.py # 认证端点测试
-│   ├── test_api.py        # API测试
-│   └── check_api.py       # API连接检查
-└── docs/                  # 文档目录
+│   ├── file_upload_example.py # 完整文件上传演示
+│   └── simple_upload.py   # 简单文件上传脚本
+└── 文档文件
     ├── README.md          # 主文档
-    ├── USAGE.md           # 详细使用说明
-    ├── AUTH_README.md     # 认证说明
-    └── QUICKSTART.md      # 快速开始指南
+    ├── COMMANDS.md        # 命令参考文档
+    ├── FILE_UPLOAD_GUIDE.md # 文件上传指南
+    ├── DOCUMENT_PARSE_GUIDE.md # 文档解析指南
+    └── COMPLETION_SUMMARY.md # 功能完成总结
 ```
 
 ## 安装依赖
