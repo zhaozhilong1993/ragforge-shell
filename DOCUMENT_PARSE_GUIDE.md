@@ -8,10 +8,11 @@ RAGForge Shell 提供了强大的文档解析功能，可以将上传的文档�
 
 文档有以下几种解析状态：
 
-- **UNSTART**: 未开始解析
-- **RUNNING**: 正在解析中
-- **FINISHED**: 解析完成
-- **FAILED**: 解析失败
+- **UNSTART**: 未开始解析 (对应后端 TaskStatus.UNSTART = "0")
+- **RUNNING**: 正在解析中 (对应后端 TaskStatus.RUNNING = "1")
+- **CANCEL**: 已取消 (对应后端 TaskStatus.CANCEL = "2")
+- **DONE**: 解析完成 (对应后端 TaskStatus.DONE = "3")
+- **FAIL**: 解析失败 (对应后端 TaskStatus.FAIL = "4")
 
 ## 基本命令
 
@@ -147,10 +148,10 @@ while true; do
     
     echo "状态: $STATUS, 进度: $PROGRESS"
     
-    if [ "$STATUS" = "FINISHED" ]; then
+    if [ "$STATUS" = "DONE" ]; then
         echo "解析完成！"
         break
-    elif [ "$STATUS" = "FAILED" ]; then
+    elif [ "$STATUS" = "FAIL" ]; then
         echo "解析失败！"
         break
     fi
@@ -172,7 +173,7 @@ uv run python main.py retrieval search "文档内容" $DATASET_ID
 - **token_count**: 已处理的token数量
 
 ### 状态字段
-- **run**: 解析运行状态
+- **run**: 解析运行状态 (UNSTART/RUNNING/CANCEL/DONE/FAIL)
 - **status**: 文档状态（1表示正常）
 
 ## 注意事项
