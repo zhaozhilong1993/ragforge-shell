@@ -284,6 +284,186 @@ def upload(dataset_id, file_path, output_format):
         formatter.print_error(f"文件上传失败: {e}")
 
 
+@documents.command()
+@click.argument('dataset_id')
+@click.argument('document_id')
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def parse(dataset_id, document_id, output_format):
+    """启动文档解析"""
+    try:
+        client = APIClient()
+        formatter = OutputFormatter(output_format)
+        
+        # 对于数据集相关API，使用Bearer格式的API token
+        api_token = client.config.get('api', {}).get('api_token')
+        if not api_token:
+            formatter.print_error("未找到API令牌，请先登录")
+            return
+        
+        # 使用API token设置认证头（Bearer格式）
+        client.session.headers['Authorization'] = f"Bearer {api_token}"
+        
+        # 构建解析请求数据
+        parse_data = {
+            "run": "RUNNING"  # 设置为运行状态
+        }
+        
+        # 调用API更新文档状态
+        response = client.put(f'/api/v1/datasets/{dataset_id}/documents/{document_id}', json_data=parse_data)
+        
+        if response.get('code') == 0:
+            formatter.print_success(f"文档 {document_id} 解析已启动")
+            if output_format == 'table':
+                formatter.print_rich_table([response.get('data', {})], "解析启动结果")
+            else:
+                print(formatter.format_output(response))
+        else:
+            formatter.print_error(f"启动解析失败: {response.get('message', '未知错误')}")
+            
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"启动文档解析失败: {e}")
+
+
+@documents.command()
+@click.argument('dataset_id')
+@click.argument('document_id')
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def status(dataset_id, document_id, output_format):
+    """查看文档解析状态"""
+    try:
+        client = APIClient()
+        formatter = OutputFormatter(output_format)
+        
+        # 对于数据集相关API，使用Bearer格式的API token
+        api_token = client.config.get('api', {}).get('api_token')
+        if not api_token:
+            formatter.print_error("未找到API令牌，请先登录")
+            return
+        
+        # 使用API token设置认证头（Bearer格式）
+        client.session.headers['Authorization'] = f"Bearer {api_token}"
+        
+        # 获取文档列表，找到指定文档
+        response = client.get(f'/api/v1/datasets/{dataset_id}/documents')
+        
+        docs = response.get('data', {}).get('docs', [])
+        target_doc = None
+        
+        for doc in docs:
+            if doc.get('id') == document_id:
+                target_doc = doc
+                break
+        
+        if not target_doc:
+            formatter.print_error(f"未找到文档 {document_id}")
+            return
+        
+        # 提取解析状态信息
+        status_info = {
+            'id': target_doc.get('id'),
+            'name': target_doc.get('name'),
+            'run': target_doc.get('run'),
+            'status': target_doc.get('status'),
+            'progress': target_doc.get('progress', 0),
+            'progress_msg': target_doc.get('progress_msg', ''),
+            'chunk_count': target_doc.get('chunk_count', 0),
+            'token_count': target_doc.get('token_count', 0)
+        }
+        
+        # 格式化输出
+        if output_format == 'table':
+            formatter.print_rich_table([status_info], f"文档 {document_id} 解析状态")
+        else:
+            print(formatter.format_output(status_info))
+            
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"获取文档解析状态失败: {e}")
+
+
+@documents.command()
+@click.argument('dataset_id')
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def parse_all(dataset_id, output_format):
+    """批量启动所有未解析文档的解析"""
+    try:
+        client = APIClient()
+        formatter = OutputFormatter(output_format)
+        
+        # 对于数据集相关API，使用Bearer格式的API token
+        api_token = client.config.get('api', {}).get('api_token')
+        if not api_token:
+            formatter.print_error("未找到API令牌，请先登录")
+            return
+        
+        # 使用API token设置认证头（Bearer格式）
+        client.session.headers['Authorization'] = f"Bearer {api_token}"
+        
+        # 获取文档列表
+        response = client.get(f'/api/v1/datasets/{dataset_id}/documents')
+        docs = response.get('data', {}).get('docs', [])
+        
+        if not docs:
+            formatter.print_error(f"数据集 {dataset_id} 中没有文档")
+            return
+        
+        # 筛选未解析的文档
+        unparsed_docs = [doc for doc in docs if doc.get('run') == 'UNSTART']
+        
+        if not unparsed_docs:
+            formatter.print_success("所有文档都已开始解析或已完成")
+            return
+        
+        # 启动解析
+        results = []
+        for doc in unparsed_docs:
+            doc_id = doc.get('id')
+            doc_name = doc.get('name')
+            
+            try:
+                parse_data = {"run": "RUNNING"}
+                result = client.put(f'/api/v1/datasets/{dataset_id}/documents/{doc_id}', json_data=parse_data)
+                
+                if result.get('code') == 0:
+                    results.append({
+                        'id': doc_id,
+                        'name': doc_name,
+                        'status': '启动成功',
+                        'message': '解析已启动'
+                    })
+                else:
+                    results.append({
+                        'id': doc_id,
+                        'name': doc_name,
+                        'status': '启动失败',
+                        'message': result.get('message', '未知错误')
+                    })
+            except Exception as e:
+                results.append({
+                    'id': doc_id,
+                    'name': doc_name,
+                    'status': '启动失败',
+                    'message': str(e)
+                })
+        
+        # 格式化输出
+        if output_format == 'table':
+            formatter.print_rich_table(results, f"批量解析结果 ({len(results)} 个文档)")
+        else:
+            print(formatter.format_output(results))
+            
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"批量启动解析失败: {e}")
+
+
 def _ensure_token(client, formatter):
     """自动兼容两种token方式"""
     # 优先尝试 auth_token（直接token）

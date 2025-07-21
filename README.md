@@ -191,6 +191,15 @@ python main.py documents create <dataset_id> "文档名称" --content "文档内
 # 上传文件到数据集
 python main.py documents upload <dataset_id> --file <file_path>
 
+# 启动文档解析
+python main.py documents parse <dataset_id> <document_id>
+
+# 查看文档解析状态
+python main.py documents status <dataset_id> <document_id>
+
+# 批量启动文档解析
+python main.py documents parse-all <dataset_id>
+
 # 更新文档
 python main.py documents update <dataset_id> <document_id> "新名称" --content "新内容"
 

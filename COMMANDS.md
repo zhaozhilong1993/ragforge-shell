@@ -146,6 +146,15 @@ python main.py documents delete <dataset_id> <document_id>
 
 # 上传文档文件
 python main.py documents upload <dataset_id> --file <file_path>
+
+# 启动文档解析
+python main.py documents parse <dataset_id> <document_id>
+
+# 查看文档解析状态
+python main.py documents status <dataset_id> <document_id>
+
+# 批量启动文档解析
+python main.py documents parse-all <dataset_id>
 ```
 
 #### 文档块管理
