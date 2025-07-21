@@ -296,31 +296,35 @@ def parse(dataset_id, document_id, output_format):
         client = APIClient()
         formatter = OutputFormatter(output_format)
         
-        # 对于数据集相关API，使用Bearer格式的API token
-        api_token = client.config.get('api', {}).get('api_token')
-        if not api_token:
-            formatter.print_error("未找到API令牌，请先登录")
+        # 对于文档解析API，使用auth_token
+        auth_token = client.config.get('api', {}).get('auth_token')
+        if not auth_token:
+            formatter.print_error("未找到认证令牌，请先登录")
             return
         
-        # 使用API token设置认证头（Bearer格式）
-        client.session.headers['Authorization'] = f"Bearer {api_token}"
+        # 使用auth_token设置认证头
+        client.session.headers['Authorization'] = auth_token
         
-        # 构建解析请求数据
+        # 构建解析请求数据 - 使用正确的API格式
         parse_data = {
-            "run": "RUNNING"  # 设置为运行状态
+            "doc_ids": [document_id],
+            "run": "1"  # TaskStatus.RUNNING = "1"
         }
         
-        # 调用API更新文档状态
-        response = client.put(f'/api/v1/datasets/{dataset_id}/documents/{document_id}', json_data=parse_data)
+        # 调用正确的文档解析API
+        response = client.post('/v1/document/run', json_data=parse_data)
         
-        if response.get('code') == 0:
+        if response is True or (isinstance(response, dict) and response.get('code') == 0):
             formatter.print_success(f"文档 {document_id} 解析已启动")
             if output_format == 'table':
-                formatter.print_rich_table([response.get('data', {})], "解析启动结果")
+                formatter.print_rich_table([{"status": "success", "message": "解析已启动"}], "解析启动结果")
             else:
-                print(formatter.format_output(response))
+                print(formatter.format_output({"status": "success", "message": "解析已启动"}))
         else:
-            formatter.print_error(f"启动解析失败: {response.get('message', '未知错误')}")
+            error_msg = "未知错误"
+            if isinstance(response, dict):
+                error_msg = response.get('message', '未知错误')
+            formatter.print_error(f"启动解析失败: {error_msg}")
             
     except Exception as e:
         formatter = OutputFormatter()
@@ -397,16 +401,20 @@ def parse_all(dataset_id, output_format):
         client = APIClient()
         formatter = OutputFormatter(output_format)
         
-        # 对于数据集相关API，使用Bearer格式的API token
-        api_token = client.config.get('api', {}).get('api_token')
-        if not api_token:
-            formatter.print_error("未找到API令牌，请先登录")
+        # 对于文档解析API，使用auth_token
+        auth_token = client.config.get('api', {}).get('auth_token')
+        if not auth_token:
+            formatter.print_error("未找到认证令牌，请先登录")
             return
         
-        # 使用API token设置认证头（Bearer格式）
-        client.session.headers['Authorization'] = f"Bearer {api_token}"
+        # 使用auth_token设置认证头
+        client.session.headers['Authorization'] = auth_token
         
-        # 获取文档列表
+        # 获取文档列表 - 使用Bearer格式的API token
+        api_token = client.config.get('api', {}).get('api_token')
+        if api_token:
+            client.session.headers['Authorization'] = f"Bearer {api_token}"
+        
         response = client.get(f'/api/v1/datasets/{dataset_id}/documents')
         docs = response.get('data', {}).get('docs', [])
         
@@ -421,6 +429,9 @@ def parse_all(dataset_id, output_format):
             formatter.print_success("所有文档都已开始解析或已完成")
             return
         
+        # 恢复使用auth_token进行解析API调用
+        client.session.headers['Authorization'] = auth_token
+        
         # 启动解析
         results = []
         for doc in unparsed_docs:
@@ -428,8 +439,12 @@ def parse_all(dataset_id, output_format):
             doc_name = doc.get('name')
             
             try:
-                parse_data = {"run": "RUNNING"}
-                result = client.put(f'/api/v1/datasets/{dataset_id}/documents/{doc_id}', json_data=parse_data)
+                # 使用正确的API格式
+                parse_data = {
+                    "doc_ids": [doc_id],
+                    "run": "1"  # TaskStatus.RUNNING = "1"
+                }
+                result = client.post('/v1/document/run', json_data=parse_data)
                 
                 if result.get('code') == 0:
                     results.append({
