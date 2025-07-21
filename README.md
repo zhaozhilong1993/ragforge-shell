@@ -88,9 +88,63 @@ python main.py datasets list --format simple
 # 在数据集中创建文档
 python main.py documents create <dataset_id> "机器学习基础" --content "机器学习是人工智能的一个分支..."
 
+# 上传文件到数据集
+python main.py documents upload <dataset_id> --file /path/to/document.pdf
+
 # 查看数据集中的文档
 python main.py documents list <dataset_id> --format simple
 ```
+
+## 文件上传示例
+
+### 完整工作流程演示
+
+我们提供了一个完整的文件上传示例脚本，演示了从文件上传到检索的完整流程：
+
+```bash
+# 运行文件上传演示脚本
+uv run python examples/file_upload_example.py
+```
+
+这个脚本会自动执行以下步骤：
+1. 检查系统状态
+2. 获取数据集列表
+3. 创建测试文档
+4. 上传文件到数据集
+5. 查看文档列表
+6. 查看文档详情
+7. 尝试检索文档内容
+8. 清理测试文件
+
+### 手动文件上传流程
+
+```bash
+# 1. 查看数据集列表
+uv run python main.py datasets list
+
+# 2. 上传文件到指定数据集
+uv run python main.py documents upload <dataset_id> --file <file_path>
+
+# 3. 查看上传后的文档列表
+uv run python main.py documents list <dataset_id>
+
+# 4. 检索文档内容
+uv run python main.py retrieval search "查询内容" <dataset_id>
+```
+
+### 支持的文件格式
+
+- **PDF文件**: `.pdf`
+- **Word文档**: `.doc`, `.docx`
+- **文本文件**: `.txt`, `.md`
+- **其他格式**: 根据系统配置支持更多格式
+
+### 文件上传注意事项
+
+1. **文件大小限制**: 根据系统配置，通常支持几MB到几十MB的文件
+2. **文件编码**: 建议使用UTF-8编码的文本文件
+3. **处理时间**: 文档处理可能需要一些时间，特别是大型PDF文件
+4. **认证要求**: 需要有效的API token进行认证
 
 #### 检索内容
 ```bash
@@ -133,6 +187,9 @@ python main.py documents show <dataset_id> <document_id>
 
 # 创建文档
 python main.py documents create <dataset_id> "文档名称" --content "文档内容"
+
+# 上传文件到数据集
+python main.py documents upload <dataset_id> --file <file_path>
 
 # 更新文档
 python main.py documents update <dataset_id> <document_id> "新名称" --content "新内容"

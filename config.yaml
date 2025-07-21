@@ -1,6 +1,6 @@
 api:
-  api_token: ragforge-VhNmY0OTAwNjIyNjExZjBhZjQ4NGE5MG
-  auth_token: ImY1ODVkMDE0NjIyMzExZjA5ZTM1NGE5MGIyNjUyM2QxIg.aHdwNA.JANkwhXro7dU5G_qm-4MsYu2w90
+  api_token: ragforge-A0NDFiMWE2NjYzYzExZjA4NzU1YmUyZj
+  auth_token: IjA0M2UwMDU2NjYzYzExZjA5NTcwYmUyZjRlZWNjNzBlIg.aH5JmA.hA8w8XI9fZF8q_X1liZpfZZ1r8o
   base_url: http://localhost:9380
   headers:
     Accept: application/json

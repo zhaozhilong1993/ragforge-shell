@@ -325,4 +325,129 @@ def status(output_format):
         
     except Exception as e:
         formatter = OutputFormatter()
-        formatter.print_error(f"检查认证状态失败: {e}") 
+        formatter.print_error(f"检查认证状态失败: {e}")
+
+
+@user.command()
+@click.argument('email')
+@click.argument('nickname')
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def setting(email, nickname, output_format):
+    """更新用户设置"""
+    try:
+        client = get_auth_client()
+        formatter = OutputFormatter(output_format)
+        
+        # 构建设置数据
+        setting_data = {
+            'email': email,
+            'nickname': nickname
+        }
+        
+        # 调用API
+        response = client.post('/v1/user/setting', json_data=setting_data)
+        
+        # 格式化输出
+        if output_format == 'table':
+            formatter.print_rich_table([response], "用户设置更新结果")
+        else:
+            print(formatter.format_output(response))
+            
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"更新用户设置失败: {e}")
+
+
+@user.command()
+@click.argument('tenant_info', type=click.Path())
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def set_tenant_info(tenant_info, output_format):
+    """设置租户信息"""
+    try:
+        import json
+        client = get_auth_client()
+        formatter = OutputFormatter(output_format)
+        
+        # 解析租户信息
+        try:
+            tenant_data = json.loads(tenant_info)
+        except json.JSONDecodeError:
+            formatter.print_error("租户信息格式错误，请使用有效的JSON格式")
+            return
+        
+        # 调用API
+        response = client.post('/v1/user/set_tenant_info', json_data=tenant_data)
+        
+        # 格式化输出
+        if output_format == 'table':
+            formatter.print_rich_table([response], "租户信息设置结果")
+        else:
+            print(formatter.format_output(response))
+            
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"设置租户信息失败: {e}")
+
+
+@user.command()
+@click.argument('code')
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def feishu_callback(code, output_format):
+    """飞书登录回调"""
+    try:
+        client = get_auth_client()
+        formatter = OutputFormatter(output_format)
+        
+        # 构建回调数据
+        callback_data = {
+            'code': code
+        }
+        
+        # 调用API
+        response = client.post('/v1/user/feishu_callback', json_data=callback_data)
+        
+        # 格式化输出
+        if output_format == 'table':
+            formatter.print_rich_table([response], "飞书登录结果")
+        else:
+            print(formatter.format_output(response))
+            
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"飞书登录失败: {e}")
+
+
+@user.command()
+@click.argument('code')
+@click.option('--format', 'output_format', default='table', 
+              type=click.Choice(['table', 'json', 'yaml']), 
+              help='输出格式')
+def github_callback(code, output_format):
+    """GitHub登录回调"""
+    try:
+        client = get_auth_client()
+        formatter = OutputFormatter(output_format)
+        
+        # 构建回调数据
+        callback_data = {
+            'code': code
+        }
+        
+        # 调用API
+        response = client.post('/v1/user/github_callback', json_data=callback_data)
+        
+        # 格式化输出
+        if output_format == 'table':
+            formatter.print_rich_table([response], "GitHub登录结果")
+        else:
+            print(formatter.format_output(response))
+            
+    except Exception as e:
+        formatter = OutputFormatter()
+        formatter.print_error(f"GitHub登录失败: {e}") 

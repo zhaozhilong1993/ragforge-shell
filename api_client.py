@@ -106,13 +106,13 @@ class APIClient:
             self.logger.error(f"GET请求失败: {e}")
             raise
     
-    def post(self, endpoint: str, data: Optional[Dict] = None, json_data: Optional[Dict] = None) -> Dict[str, Any]:
+    def post(self, endpoint: str, data: Optional[Dict] = None, json_data: Optional[Dict] = None, files: Optional[Dict] = None) -> Dict[str, Any]:
         """发送POST请求"""
         url = f"{self.base_url}{endpoint}"
         self.logger.info(f"POST {url}")
         
         try:
-            response = self.session.post(url, data=data, json=json_data)
+            response = self.session.post(url, data=data, json=json_data, files=files)
             response.raise_for_status()
             
             # 检查响应头中是否有Authorization

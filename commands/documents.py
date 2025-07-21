@@ -21,28 +21,17 @@ def list_documents(dataset_id, output_format):
         client = APIClient()
         formatter = OutputFormatter(output_format)
         
-        # 自动兼容token
-        if not _ensure_token(client, formatter):
+        # 对于数据集相关API，使用Bearer格式的API token
+        api_token = client.config.get('api', {}).get('api_token')
+        if not api_token:
+            formatter.print_error("未找到API令牌，请先登录")
             return
         
-        # 调用API
-        response = client.get(f'/v1/document/list')
+        # 使用API token设置认证头（Bearer格式）
+        client.session.headers['Authorization'] = f"Bearer {api_token}"
         
-        # 如果返回认证错误，尝试切换token格式
-        if response.get('message') == 'Please check your authorization format.':
-            # 切换token格式重试
-            auth_token = client.config.get('api', {}).get('auth_token')
-            api_token = client.config.get('api', {}).get('api_token')
-            
-            if auth_token and api_token:
-                # 如果当前是auth_token，切换到api_token
-                if client.session.headers.get('Authorization') == auth_token:
-                    client.session.headers['Authorization'] = f"Bearer {api_token}"
-                else:
-                    client.session.headers['Authorization'] = auth_token
-                
-                # 重试请求
-                response = client.get(f'/api/v1/datasets/{dataset_id}/documents')
+        # 调用API
+        response = client.get(f'/api/v1/datasets/{dataset_id}/documents')
         
         docs = response.get('documents')
         if docs is None or docs is False or docs == {}:
