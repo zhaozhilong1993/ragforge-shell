@@ -57,16 +57,21 @@ check_auth() {
 create_dataset() {
     log_info "创建数据集: $DATASET_NAME"
     
-    # 删除已存在的数据集（如果存在）
-    # 由于数据集列表API可能有问题，直接尝试创建新数据集
-    log_warning "数据集列表API可能有问题，直接创建新数据集"
+    # 创建数据集并获取ID
+    RESPONSE=$(uv run python "$PROJECT_ROOT/main.py" datasets create "$DATASET_NAME" --description "快速测试数据集" --format json 2>/dev/null)
     
-    # 创建新数据集
-    if uv run python "$PROJECT_ROOT/main.py" datasets create "$DATASET_NAME" --description "快速测试数据集" &> /dev/null; then
-        log_success "数据集创建成功"
+    # 提取数据集ID
+    DATASET_ID=$(echo "$RESPONSE" | grep -o '"id": "[^"]*"' | cut -d'"' -f4)
+    
+    if [ -z "$DATASET_ID" ]; then
+        log_warning "无法获取数据集ID，使用数据集名称"
+        DATASET_ID="$DATASET_NAME"
     else
-        log_warning "数据集可能已存在，继续测试"
+        log_success "数据集创建成功，ID: $DATASET_ID"
     fi
+    
+    # 设置全局变量
+    export DATASET_ID
 }
 
 # 生成测试文档
@@ -127,7 +132,7 @@ upload_batch() {
     for ((i=start_id; i<=end_id; i++)); do
         doc_file=$(generate_single_doc $i)
         
-        if uv run python "$PROJECT_ROOT/main.py" documents upload "$DATASET_NAME" --file "$doc_file" &> /dev/null; then
+        if uv run python "$PROJECT_ROOT/main.py" documents upload "$DATASET_ID" --file "$doc_file" &> /dev/null; then
             success_count=$((success_count + 1))
             log_success "文档 $i 上传成功"
         else
@@ -170,6 +175,10 @@ run_quick_test() {
         batch_success=$(echo $result | cut -d' ' -f1)
         batch_fail=$(echo $result | cut -d' ' -f2)
         
+        # 确保变量是数字
+        batch_success=${batch_success:-0}
+        batch_fail=${batch_fail:-0}
+        
         total_success=$((total_success + batch_success))
         total_fail=$((total_fail + batch_fail))
     done
@@ -199,16 +208,16 @@ verify_results() {
     log_info "验证测试结果..."
     
     # 检查数据集中的文档数量
-    local doc_count=$(uv run python "$PROJECT_ROOT/main.py" documents list "$DATASET_NAME" 2>/dev/null | grep -c "文档" || echo "0")
+    local doc_count=$(uv run python "$PROJECT_ROOT/main.py" documents list "$DATASET_ID" 2>/dev/null | grep -c "文档" || echo "0")
     log_info "数据集中的文档数量: $doc_count"
     
     # 显示数据集信息
     echo "=== 数据集信息 ===" | tee -a "$LOG_FILE"
-    uv run python "$PROJECT_ROOT/main.py" datasets show "$DATASET_NAME" | tee -a "$LOG_FILE"
+    uv run python "$PROJECT_ROOT/main.py" datasets show "$DATASET_ID" | tee -a "$LOG_FILE"
     
     # 显示文档列表（前10个）
     echo "=== 文档列表（前10个）===" | tee -a "$LOG_FILE"
-    uv run python "$PROJECT_ROOT/main.py" documents list "$DATASET_NAME" | head -20 | tee -a "$LOG_FILE"
+    uv run python "$PROJECT_ROOT/main.py" documents list "$DATASET_ID" | head -20 | tee -a "$LOG_FILE"
 }
 
 # 清理临时文件

@@ -74,19 +74,21 @@ check_auth() {
 create_dataset() {
     log_info "创建数据集: $DATASET_NAME"
     
-    # 检查数据集是否已存在
-    if uv run python "$PROJECT_ROOT/main.py" datasets list | grep -q "$DATASET_NAME"; then
-        log_warning "数据集 $DATASET_NAME 已存在，将使用现有数据集"
-        return
+    # 创建数据集并获取ID
+    RESPONSE=$(uv run python "$PROJECT_ROOT/main.py" datasets create "$DATASET_NAME" --description "压力测试数据集" --format json 2>/dev/null)
+    
+    # 提取数据集ID
+    DATASET_ID=$(echo "$RESPONSE" | grep -o '"id": "[^"]*"' | cut -d'"' -f4)
+    
+    if [ -z "$DATASET_ID" ]; then
+        log_warning "无法获取数据集ID，使用数据集名称"
+        DATASET_ID="$DATASET_NAME"
+    else
+        log_success "数据集创建成功，ID: $DATASET_ID"
     fi
     
-    # 创建新数据集
-    if uv run python "$PROJECT_ROOT/main.py" datasets create "$DATASET_NAME" --description "压力测试数据集"; then
-        log_success "数据集创建成功"
-    else
-        log_error "数据集创建失败"
-        exit 1
-    fi
+    # 设置全局变量
+    export DATASET_ID
 }
 
 # 生成测试文档
@@ -159,7 +161,7 @@ upload_batch() {
     for ((i=start_id; i<=end_id; i++)); do
         doc_file=$(generate_single_doc $i)
         
-        if uv run python "$PROJECT_ROOT/main.py" documents upload "$DATASET_NAME" --file "$doc_file" &> /dev/null; then
+        if uv run python "$PROJECT_ROOT/main.py" documents upload "$DATASET_ID" --file "$doc_file" &> /dev/null; then
             success_count=$((success_count + 1))
         else
             fail_count=$((fail_count + 1))
@@ -205,6 +207,10 @@ run_stress_test() {
         result=$(upload_batch $start_id $end_id $batch)
         batch_success=$(echo $result | cut -d' ' -f1)
         batch_fail=$(echo $result | cut -d' ' -f2)
+        
+        # 确保变量是数字
+        batch_success=${batch_success:-0}
+        batch_fail=${batch_fail:-0}
         
         total_success=$((total_success + batch_success))
         total_fail=$((total_fail + batch_fail))
