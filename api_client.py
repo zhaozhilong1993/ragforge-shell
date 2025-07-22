@@ -93,13 +93,23 @@ class APIClient:
             # 如果不是JSON格式，返回文本内容
             return {"text": response.text}
     
-    def get(self, endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
+    def get(self, endpoint: str, params: Optional[Dict] = None, headers: Optional[Dict] = None) -> Dict[str, Any]:
         """发送GET请求"""
         url = f"{self.base_url}{endpoint}"
         self.logger.info(f"GET {url}")
         
         try:
-            response = self.session.get(url, params=params)
+            # 对于GET请求，只设置Authorization头，不设置Content-Type
+            request_headers = {}
+            if 'Authorization' in self.session.headers:
+                request_headers['Authorization'] = self.session.headers['Authorization']
+            
+            # 如果提供了自定义headers，则覆盖默认的
+            if headers:
+                request_headers.update(headers)
+            
+            # 使用requests.get而不是session.get，避免继承session的默认头
+            response = requests.get(url, params=params, headers=request_headers, timeout=self.session.timeout)
             response.raise_for_status()
             return self._handle_response(response)
         except requests.exceptions.RequestException as e:
