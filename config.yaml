@@ -1,6 +1,6 @@
 api:
-  api_token: ragforge-A0NDFiMWE2NjYzYzExZjA4NzU1YmUyZj
-  auth_token: Ijk4YzZjYjE2NjZjZjExZjBhMTkzMDI0MmFjMTQwMGZlIg.aH9BMQ.hfQHoP1eo2oNfNarIeUzR1GT5xc
+  api_token: ragflow-Y1ZWNiOTk2NjZkMjExZjBhY2NhMDI0Mm
+  auth_token: Ijk4YzZjYjE2NjZjZjExZjBhMTkzMDI0MmFjMTQwMGZlIg.aH9F5A.uA5MbSa2r9zwdbs4xJYNBmoHURM
   base_url: http://121.37.88.5:9380
   headers:
     Accept: application/json

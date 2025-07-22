@@ -16,7 +16,7 @@ NC='\033[0m'
 TOTAL_DOCUMENTS=100  # 快速测试只上传100个文档
 BATCH_SIZE=10
 DATASET_NAME="quick_test_dataset"
-LOG_FILE="tests/quick_test.log"
+LOG_FILE="quick_test.log"
 TEMP_DIR="tests/temp_docs_quick"
 
 # 日志函数
@@ -40,7 +40,11 @@ log_error() {
 check_auth() {
     log_info "检查认证状态..."
     
-    if ! uv run python main.py user status &> /dev/null; then
+    # 获取脚本所在目录的上级目录（项目根目录）
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+    
+    if ! uv run python "$PROJECT_ROOT/main.py" user status &> /dev/null; then
         log_error "用户未登录，请先登录"
         log_info "运行: uv run python main.py user login <email> <password>"
         exit 1
@@ -58,7 +62,7 @@ create_dataset() {
     log_warning "数据集列表API可能有问题，直接创建新数据集"
     
     # 创建新数据集
-    if uv run python main.py datasets create "$DATASET_NAME" --description "快速测试数据集" &> /dev/null; then
+    if uv run python "$PROJECT_ROOT/main.py" datasets create "$DATASET_NAME" --description "快速测试数据集" &> /dev/null; then
         log_success "数据集创建成功"
     else
         log_warning "数据集可能已存在，继续测试"
@@ -111,19 +115,19 @@ generate_single_doc() {
 
 # 上传文档批次
 upload_batch() {
-    local start_id=$1
-    local end_id=$2
-    local batch_num=$3
+    start_id=$1
+    end_id=$2
+    batch_num=$3
     
     log_info "上传批次 $batch_num: 文档 $start_id 到 $end_id"
     
-    local success_count=0
-    local fail_count=0
+    success_count=0
+    fail_count=0
     
     for ((i=start_id; i<=end_id; i++)); do
-        local doc_file=$(generate_single_doc $i)
+        doc_file=$(generate_single_doc $i)
         
-        if uv run python main.py documents upload "$DATASET_NAME" --file "$doc_file" &> /dev/null; then
+        if uv run python "$PROJECT_ROOT/main.py" documents upload "$DATASET_NAME" --file "$doc_file" &> /dev/null; then
             success_count=$((success_count + 1))
             log_success "文档 $i 上传成功"
         else
@@ -155,16 +159,16 @@ run_quick_test() {
     
     # 执行批次上传
     for ((batch=1; batch<=total_batches; batch++)); do
-        local start_id=$(((batch-1) * BATCH_SIZE + 1))
-        local end_id=$((batch * BATCH_SIZE))
+        start_id=$(((batch-1) * BATCH_SIZE + 1))
+        end_id=$((batch * BATCH_SIZE))
         
         if [ $end_id -gt $TOTAL_DOCUMENTS ]; then
             end_id=$TOTAL_DOCUMENTS
         fi
         
-        local result=$(upload_batch $start_id $end_id $batch)
-        local batch_success=$(echo $result | cut -d' ' -f1)
-        local batch_fail=$(echo $result | cut -d' ' -f2)
+        result=$(upload_batch $start_id $end_id $batch)
+        batch_success=$(echo $result | cut -d' ' -f1)
+        batch_fail=$(echo $result | cut -d' ' -f2)
         
         total_success=$((total_success + batch_success))
         total_fail=$((total_fail + batch_fail))
@@ -195,16 +199,16 @@ verify_results() {
     log_info "验证测试结果..."
     
     # 检查数据集中的文档数量
-    local doc_count=$(uv run python main.py documents list "$DATASET_NAME" 2>/dev/null | grep -c "文档" || echo "0")
+    local doc_count=$(uv run python "$PROJECT_ROOT/main.py" documents list "$DATASET_NAME" 2>/dev/null | grep -c "文档" || echo "0")
     log_info "数据集中的文档数量: $doc_count"
     
     # 显示数据集信息
     echo "=== 数据集信息 ===" | tee -a "$LOG_FILE"
-    uv run python main.py datasets show "$DATASET_NAME" | tee -a "$LOG_FILE"
+    uv run python "$PROJECT_ROOT/main.py" datasets show "$DATASET_NAME" | tee -a "$LOG_FILE"
     
     # 显示文档列表（前10个）
     echo "=== 文档列表（前10个）===" | tee -a "$LOG_FILE"
-    uv run python main.py documents list "$DATASET_NAME" | head -20 | tee -a "$LOG_FILE"
+    uv run python "$PROJECT_ROOT/main.py" documents list "$DATASET_NAME" | head -20 | tee -a "$LOG_FILE"
 }
 
 # 清理临时文件
