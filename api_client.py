@@ -116,13 +116,23 @@ class APIClient:
             self.logger.error(f"GET请求失败: {e}")
             raise
     
-    def post(self, endpoint: str, data: Optional[Dict] = None, json_data: Optional[Dict] = None, files: Optional[Dict] = None) -> Dict[str, Any]:
+    def post(self, endpoint: str, data: Optional[Dict] = None, json_data: Optional[Dict] = None, files: Optional[Dict] = None, headers: Optional[Dict] = None) -> Dict[str, Any]:
         """发送POST请求"""
         url = f"{self.base_url}{endpoint}"
         self.logger.info(f"POST {url}")
         
         try:
-            response = self.session.post(url, data=data, json=json_data, files=files)
+            # 构建请求头
+            request_headers = {}
+            if 'Authorization' in self.session.headers:
+                request_headers['Authorization'] = self.session.headers['Authorization']
+            
+            # 如果提供了自定义headers，则覆盖默认的
+            if headers:
+                request_headers.update(headers)
+            
+            # 使用requests.post而不是session.post，避免继承session的默认头
+            response = requests.post(url, data=data, json=json_data, files=files, headers=request_headers, timeout=self.session.timeout)
             response.raise_for_status()
             
             # 检查响应头中是否有Authorization
@@ -136,26 +146,46 @@ class APIClient:
             self.logger.error(f"POST请求失败: {e}")
             raise
     
-    def put(self, endpoint: str, data: Optional[Dict] = None, json_data: Optional[Dict] = None) -> Dict[str, Any]:
+    def put(self, endpoint: str, data: Optional[Dict] = None, json_data: Optional[Dict] = None, headers: Optional[Dict] = None) -> Dict[str, Any]:
         """发送PUT请求"""
         url = f"{self.base_url}{endpoint}"
         self.logger.info(f"PUT {url}")
         
         try:
-            response = self.session.put(url, data=data, json=json_data)
+            # 构建请求头
+            request_headers = {}
+            if 'Authorization' in self.session.headers:
+                request_headers['Authorization'] = self.session.headers['Authorization']
+            
+            # 如果提供了自定义headers，则覆盖默认的
+            if headers:
+                request_headers.update(headers)
+            
+            # 使用requests.put而不是session.put，避免继承session的默认头
+            response = requests.put(url, data=data, json=json_data, headers=request_headers, timeout=self.session.timeout)
             response.raise_for_status()
             return self._handle_response(response)
         except requests.exceptions.RequestException as e:
             self.logger.error(f"PUT请求失败: {e}")
             raise
     
-    def delete(self, endpoint: str) -> Dict[str, Any]:
+    def delete(self, endpoint: str, headers: Optional[Dict] = None) -> Dict[str, Any]:
         """发送DELETE请求"""
         url = f"{self.base_url}{endpoint}"
         self.logger.info(f"DELETE {url}")
         
         try:
-            response = self.session.delete(url)
+            # 构建请求头
+            request_headers = {}
+            if 'Authorization' in self.session.headers:
+                request_headers['Authorization'] = self.session.headers['Authorization']
+            
+            # 如果提供了自定义headers，则覆盖默认的
+            if headers:
+                request_headers.update(headers)
+            
+            # 使用requests.delete而不是session.delete，避免继承session的默认头
+            response = requests.delete(url, headers=request_headers, timeout=self.session.timeout)
             response.raise_for_status()
             return self._handle_response(response) if response.content else {}
         except requests.exceptions.RequestException as e:

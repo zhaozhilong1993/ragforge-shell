@@ -26,11 +26,8 @@ def list(output_format):
             formatter.print_error("未找到API令牌，请先登录")
             return
         
-        # 使用API token设置认证头（Bearer格式）
-        client.session.headers['Authorization'] = f"Bearer {api_token}"
-        
-        # 调用API
-        response = client.get('/api/v1/datasets')
+        # 调用API（使用API token的Bearer格式）
+        response = client.get('/api/v1/datasets', headers={'Authorization': f"Bearer {api_token}"})
         
         # 格式化输出
         if output_format == 'table':
@@ -70,11 +67,8 @@ def show(dataset_id, output_format):
             formatter.print_error("未找到API令牌，请先登录")
             return
         
-        # 使用API token设置认证头（Bearer格式）
-        client.session.headers['Authorization'] = f"Bearer {api_token}"
-        
-        # 调用API
-        response = client.get(f'/api/v1/datasets/{dataset_id}')
+        # 调用API（使用API token的Bearer格式）
+        response = client.get(f'/api/v1/datasets/{dataset_id}', headers={'Authorization': f"Bearer {api_token}"})
         
         # 格式化输出
         if output_format == 'table':
@@ -109,9 +103,6 @@ def create(name, description, output_format):
             formatter.print_error("未找到API令牌，请先登录")
             return
         
-        # 使用API token设置认证头（Bearer格式）
-        client.session.headers['Authorization'] = f"Bearer {api_token}"
-        
         # 构建请求数据
         dataset_data = {
             'name': name
@@ -120,8 +111,8 @@ def create(name, description, output_format):
         if description:
             dataset_data['description'] = description
         
-        # 调用API
-        response = client.post('/api/v1/datasets', json_data=dataset_data)
+        # 调用API（使用API token的Bearer格式）
+        response = client.post('/api/v1/datasets', json_data=dataset_data, headers={'Authorization': f"Bearer {api_token}"})
         
         formatter.print_success(f"数据集 {name} 创建成功")
         
@@ -152,11 +143,8 @@ def delete(dataset_id):
             formatter.print_error("未找到API令牌，请先登录")
             return
         
-        # 使用API token设置认证头（Bearer格式）
-        client.session.headers['Authorization'] = f"Bearer {api_token}"
-        
-        # 调用API
-        client.delete(f'/api/v1/datasets/{dataset_id}')
+        # 调用API（使用API token的Bearer格式）
+        client.delete(f'/api/v1/datasets/{dataset_id}', headers={'Authorization': f"Bearer {api_token}"})
         
         formatter.print_success(f"数据集 {dataset_id} 删除成功")
         
@@ -184,9 +172,6 @@ def update(dataset_id, name, description, output_format):
             formatter.print_error("未找到API令牌，请先登录")
             return
         
-        # 使用API token设置认证头（Bearer格式）
-        client.session.headers['Authorization'] = f"Bearer {api_token}"
-        
         # 构建请求数据
         update_data = {
             'name': name
@@ -195,8 +180,8 @@ def update(dataset_id, name, description, output_format):
         if description:
             update_data['description'] = description
         
-        # 调用API
-        response = client.put(f'/api/v1/datasets/{dataset_id}', json_data=update_data)
+        # 调用API（使用API token的Bearer格式）
+        response = client.put(f'/api/v1/datasets/{dataset_id}', json_data=update_data, headers={'Authorization': f"Bearer {api_token}"})
         
         formatter.print_success(f"数据集 {dataset_id} 更新成功")
         
