@@ -31,8 +31,8 @@ def cli(ctx, config, debug):
         python main.py user info
         python main.py debug check-connection
         python main.py datasets list
-        python main.py documents list <dataset_id>
-        python main.py retrieval search "查询内容" <dataset_id>
+        python main.py documents list <knowledge_base_id>
+        python main.py retrieval search "查询内容" <knowledge_base_id>
     """
     ctx.ensure_object(dict)
     ctx.obj['config'] = config

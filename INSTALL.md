@@ -97,12 +97,12 @@ ragforge datasets create               # 创建数据集
 ragforge datasets delete <dataset_id>  # 删除数据集
 
 # 文档管理
-ragforge documents list <kb_id>        # 列出文档
-ragforge documents upload <kb_id>      # 上传文档
-ragforge documents delete <doc_id>     # 删除文档
+ragforge documents list <knowledge_base_id>        # 列出文档
+ragforge documents upload <knowledge_base_id>      # 上传文档
+ragforge documents delete <document_id>     # 删除文档
 
 # 检索
-ragforge retrieval search "查询内容" <kb_id>  # 搜索文档
+ragforge retrieval search "查询内容" <knowledge_base_id>  # 搜索文档
 
 # 调试
 ragforge debug check-connection        # 检查连接
@@ -121,6 +121,12 @@ ragforge --debug datasets list
 
 # 使用自定义配置文件
 ragforge --config my_config.yaml datasets list
+
+# 查看知识库中的文档
+ragforge documents list <knowledge_base_id> --format simple
+
+# 查看文档详情
+ragforge documents show <knowledge_base_id> <document_id>
 ```
 
 ## 卸载

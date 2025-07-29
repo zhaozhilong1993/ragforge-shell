@@ -64,11 +64,11 @@ echo "   ragforge datasets list"
 echo
 
 echo "4. 查看文档："
-echo "   ragforge documents list <kb_id>"
+echo "   ragforge documents list <knowledge_base_id>"
 echo
 
 echo "5. 搜索文档："
-echo "   ragforge retrieval search '查询内容' <kb_id>"
+echo "   ragforge retrieval search '查询内容' <knowledge_base_id>"
 echo
 
 echo "6. 检查连接："
@@ -86,4 +86,9 @@ echo
 echo "注意：使用前请确保："
 echo "1. RAGForge服务器正在运行"
 echo "2. 配置文件 config.yaml 中的 base_url 正确"
-echo "3. 已登录用户（ragforge user login）" 
+echo "3. 已登录用户（ragforge user login）"
+echo
+echo "说明："
+echo "- ragforge datasets list 列出的是知识库ID"
+echo "- ragforge documents list <knowledge_base_id> 列出的是文档ID"
+echo "- 使用文档ID可以查看具体文档的详细信息" 

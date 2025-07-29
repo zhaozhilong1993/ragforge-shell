@@ -44,9 +44,9 @@ def list_documents(dataset_id, output_format):
         
         # 格式化输出
         if output_format == 'table':
-            formatter.print_rich_table(docs, f"数据集 {dataset_id} 的文档列表")
+            formatter.print_rich_table(docs, f"知识库 {dataset_id} 的文档列表")
         elif output_format == 'simple':
-            formatter.print_simple_list(docs, f"数据集 {dataset_id} 的文档列表")
+            formatter.print_simple_list(docs, f"知识库 {dataset_id} 的文档列表")
         else:
             print(formatter.format_output(response))
             
