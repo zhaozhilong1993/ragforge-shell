@@ -5,14 +5,21 @@ RAGForge API 脚本工具
 """
 
 import click
+import os
 import sys
-from pathlib import Path
+
+# 添加当前目录到 Python 路径
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from api_client import APIClient
+from utils.output import OutputFormatter
 
 # 导入命令模块
 from commands.datasets import datasets
 from commands.documents import documents
 from commands.chunks import chunks
 from commands.retrieval import retrieval
+from commands.models import models
 from commands.user import user
 from commands.debug import debug
 from commands.system import system
@@ -39,13 +46,14 @@ def cli(ctx, config, debug):
     ctx.obj['debug'] = debug
 
 
-# 注册命令组
-cli.add_command(user, name='user')
-cli.add_command(debug, name='debug')
+# 添加命令到CLI组
 cli.add_command(datasets, name='datasets')
 cli.add_command(documents, name='documents')
+cli.add_command(models, name='models')
 cli.add_command(chunks, name='chunks')
 cli.add_command(retrieval, name='retrieval')
+cli.add_command(user, name='user')
+cli.add_command(debug, name='debug')
 cli.add_command(system, name='system')
 
 
