@@ -250,21 +250,13 @@ def default(output_format):
             
             if output_format == 'table':
                 click.echo(f"Default Model Configuration:")
-                click.echo(f"  Factory: {data.get('factory', '')}")
-                click.echo(f"  Base URL: {data.get('base_url', '')}")
+                click.echo(f"  Source: {data.get('source', 'unknown')}")
                 click.echo()
-                click.echo(f"  Default Models:")
-                models = data.get('models', {})
-                for model_type, model_name in models.items():
-                    if model_name:  # 只显示有值的模型
-                        click.echo(f"    {model_type}: {model_name}")
                 
-                click.echo()
-                click.echo(f"  Model Configurations:")
-                configs = data.get('models_config', {})
-                for model_type, config_url in configs.items():
-                    if config_url:  # 只显示有值的配置
-                        click.echo(f"    {model_type}: {config_url}")
+                models = data.get('models', {})
+                for model_type, model_id in models.items():
+                    if model_id:  # 只显示有值的模型
+                        click.echo(f"  {model_type}: {model_id}")
             else:
                 click.echo(formatter.format_output(data))
         else:
