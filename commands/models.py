@@ -86,7 +86,11 @@ def edit(factory, name, api_key, base_url, max_tokens):
         client = APIClient()
         
         # 获取现有配置
-        response = client.get(f'/v1/llm/get_llm_config?llm_factory={factory}&llm_name={name}')
+        params = {
+            'llm_factory': factory,
+            'llm_name': name
+        }
+        response = client.get('/v1/llm/get_llm_config', params=params)
         
         if isinstance(response, dict) and response.get('code') == 0:
             current_config = response.get('data', {})
@@ -146,7 +150,12 @@ def show(factory, name):
     try:
         client = APIClient()
         
-        response = client.get(f'/v1/llm/get_llm_config?llm_factory={factory}&llm_name={name}')
+        # 使用params参数而不是URL拼接
+        params = {
+            'llm_factory': factory,
+            'llm_name': name
+        }
+        response = client.get('/v1/llm/get_llm_config', params=params)
         
         if isinstance(response, dict) and response.get('code') == 0:
             config = response.get('data', {})
