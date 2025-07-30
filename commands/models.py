@@ -206,3 +206,41 @@ def factories(output_format):
             
     except Exception as e:
         click.echo(f"Error: {str(e)}") 
+
+
+@models.command()
+@click.option('--format', 'output_format', default='table', type=click.Choice(['table', 'json']), help='Output format')
+def default(output_format):
+    """Show default model configuration"""
+    try:
+        client = APIClient()
+        response = client.get('/v1/llm/default_models')
+        
+        if isinstance(response, dict) and response.get('code') == 0:
+            data = response.get('data', {})
+            formatter = OutputFormatter(output_format)
+            
+            if output_format == 'table':
+                click.echo(f"Default Model Configuration:")
+                click.echo(f"  Factory: {data.get('factory', '')}")
+                click.echo(f"  Base URL: {data.get('base_url', '')}")
+                click.echo()
+                click.echo(f"  Default Models:")
+                models = data.get('models', {})
+                for model_type, model_name in models.items():
+                    if model_name:  # 只显示有值的模型
+                        click.echo(f"    {model_type}: {model_name}")
+                
+                click.echo()
+                click.echo(f"  Model Configurations:")
+                configs = data.get('models_config', {})
+                for model_type, config_url in configs.items():
+                    if config_url:  # 只显示有值的配置
+                        click.echo(f"    {model_type}: {config_url}")
+            else:
+                click.echo(formatter.format_output(data))
+        else:
+            click.echo(f"Error: {response.get('message', 'Unknown error')}")
+            
+    except Exception as e:
+        click.echo(f"Error: {str(e)}") 
