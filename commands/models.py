@@ -43,6 +43,34 @@ def list(output_format):
 
 
 @models.command()
+@click.option('--type', 'model_type', required=True, 
+              type=click.Choice(['chat', 'embedding', 'rerank', 'asr', 'image2text']), 
+              help='Model type')
+@click.option('--factory', required=True, help='LLM factory name')
+@click.option('--name', required=True, help='Model name')
+def set_default(model_type, factory, name):
+    """Set default model for a specific type"""
+    try:
+        client = APIClient()
+        
+        payload = {
+            'model_type': model_type,
+            'llm_factory': factory,
+            'llm_name': name
+        }
+        
+        response = client.post('/v1/llm/set_default_model', json_data=payload)
+        
+        if isinstance(response, dict) and response.get('code') == 0:
+            click.echo(f"✅ Default {model_type} model set to {name} in factory {factory}")
+        else:
+            click.echo(f"❌ Error: {response.get('message', 'Unknown error')}")
+            
+    except Exception as e:
+        click.echo(f"❌ Error: {str(e)}")
+
+
+@models.command()
 @click.option('--factory', required=True, help='LLM factory name')
 @click.option('--name', required=True, help='Model name')
 @click.option('--type', 'model_type', required=True, help='Model type (chat, embedding, rerank, image2text)')
