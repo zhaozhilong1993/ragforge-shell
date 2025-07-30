@@ -254,9 +254,22 @@ def default(output_format):
                 click.echo()
                 
                 models = data.get('models', {})
+                api_configs = data.get('api_configs', {})
+                
                 for model_type, model_id in models.items():
                     if model_id:  # 只显示有值的模型
                         click.echo(f"  {model_type}: {model_id}")
+                        
+                        # 显示API配置信息
+                        if model_type in api_configs:
+                            config = api_configs[model_type]
+                            if config.get('api_base'):
+                                click.echo(f"    API Base: {config['api_base']}")
+                            if config.get('max_tokens'):
+                                click.echo(f"    Max Tokens: {config['max_tokens']}")
+                            if config.get('api_key'):
+                                click.echo(f"    API Key: {config['api_key']}")
+                        click.echo()
             else:
                 click.echo(formatter.format_output(data))
         else:
