@@ -192,6 +192,18 @@ uv run python main.py retrieval search "查询内容" <dataset_id>        # 检�
 uv run python main.py retrieval search-all "查询内容"                  # 多数据集检索
 ```
 
+### 团队管理 (teams)
+```bash
+uv run python main.py teams list-available               # 查看可加入的团队列表
+uv run python main.py teams join <team_id>               # 加入指定团队
+uv run python main.py teams leave <team_id>              # 离开指定团队
+uv run python main.py teams my-teams                     # 查看我加入的团队列表
+uv run python main.py teams info <team_id>               # 查看团队详细信息
+uv run python main.py teams members <team_id>            # 查看团队成员列表
+uv run python main.py teams create <name>                # 创建新团队
+uv run python main.py teams delete <team_id>             # 删除团队
+```
+
 ### 调试功能 (debug)
 ```bash
 uv run python main.py debug test-api                      # API测试
@@ -216,6 +228,7 @@ ragforge-shell/
 │   ├── retrieval.py       # 检索功能命令
 │   ├── user.py            # 用户管理命令
 │   ├── system.py          # 系统管理命令
+│   ├── teams.py           # 团队管理命令
 │   └── debug.py           # 调试命令
 ├── utils/                 # 工具函数目录
 │   └── output.py          # 输出格式化工具

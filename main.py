@@ -23,6 +23,7 @@ from commands.models import models
 from commands.user import user
 from commands.debug import debug
 from commands.system import system
+from commands.teams import teams
 
 
 @click.group()
@@ -55,6 +56,7 @@ cli.add_command(retrieval, name='retrieval')
 cli.add_command(user, name='user')
 cli.add_command(debug, name='debug')
 cli.add_command(system, name='system')
+cli.add_command(teams, name='teams')
 
 
 @cli.command()

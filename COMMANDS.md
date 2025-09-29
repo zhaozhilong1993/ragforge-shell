@@ -12,6 +12,7 @@
 | `documents` | 文档管理 | `list`, `show`, `upload`, `parse`, `status`, `parse-all` |
 | `chunks` | 文档块管理 | `list`, `show`, `add`, `update`, `delete` |
 | `retrieval` | 检索功能 | `search`, `search-all` |
+| `teams` | 团队管理 | `list-available`, `join`, `leave`, `my-teams`, `info`, `members`, `create`, `delete` |
 | `debug` | 调试工具 | `test-api`, `check-connection`, `api-call` |
 
 ## 用户管理命令 (user)
@@ -269,4 +270,61 @@ done
 
 # 批量启动解析
 uv run python main.py documents parse-all <dataset_id>
+```
+
+## 团队管理命令 (teams)
+
+### 查看可加入团队
+```bash
+uv run python main.py teams list-available               # 查看可加入的团队列表
+uv run python main.py teams list-available --format json # JSON格式输出
+```
+
+### 团队操作
+```bash
+uv run python main.py teams join <team_id>               # 加入指定团队
+uv run python main.py teams leave <team_id>              # 离开指定团队
+uv run python main.py teams my-teams                     # 查看我加入的团队列表
+```
+
+### 团队信息
+```bash
+uv run python main.py teams info <team_id>               # 查看团队详细信息
+uv run python main.py teams members <team_id>            # 查看团队成员列表
+```
+
+### 团队管理（创建者权限）
+```bash
+uv run python main.py teams create <name>                # 创建新团队
+uv run python main.py teams create <name> --description "团队描述" --is-public  # 创建公开团队
+uv run python main.py teams delete <team_id>             # 删除团队
+```
+
+### 团队管理选项参数
+- `--description <text>`: 团队描述
+- `--is-public`: 创建公开团队（任何人都可以加入）
+- `--format <format>`: 输出格式 (table, json, yaml)
+
+### 团队管理使用示例
+```bash
+# 1. 查看可加入的团队
+uv run python main.py teams list-available
+
+# 2. 查看团队详细信息
+uv run python main.py teams info <team_id>
+
+# 3. 加入团队
+uv run python main.py teams join <team_id>
+
+# 4. 查看我的团队
+uv run python main.py teams my-teams
+
+# 5. 查看团队成员
+uv run python main.py teams members <team_id>
+
+# 6. 创建新团队
+uv run python main.py teams create "我的团队" --description "这是一个测试团队" --is-public
+
+# 7. 离开团队
+uv run python main.py teams leave <team_id>
 ``` 
